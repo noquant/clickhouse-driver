@@ -134,6 +134,7 @@ class Connection(object):
             connect_timeout=defines.DBMS_DEFAULT_CONNECT_TIMEOUT_SEC,
             send_receive_timeout=defines.DBMS_DEFAULT_TIMEOUT_SEC,
             sync_request_timeout=defines.DBMS_DEFAULT_SYNC_REQUEST_TIMEOUT_SEC,
+            socket_keepalive=False,
             compress_block_size=defines.DEFAULT_COMPRESS_BLOCK_SIZE,
             compression=False,
             secure=False,
@@ -163,6 +164,7 @@ class Connection(object):
         self.connect_timeout = connect_timeout
         self.send_receive_timeout = send_receive_timeout
         self.sync_request_timeout = sync_request_timeout
+        self.socket_keepalive = socket_keepalive
         self.settings_is_important = settings_is_important
 
         self.secure_socket = secure
@@ -310,6 +312,12 @@ class Connection(object):
 
         # performance tweak
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        # TCP_KEEPALIVE
+        if self.socket_keepalive:
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_KEEPALIVE, 1)
+            self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPIDLE, 30)
+            self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPINTVL, 30)
+            self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_KEEPCNT, 5)
 
         self.fin = BufferedSocketReader(self.socket, defines.BUFFER_SIZE)
         self.fout = BufferedSocketWriter(self.socket, defines.BUFFER_SIZE)

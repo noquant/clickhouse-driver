@@ -767,6 +767,9 @@ class Client(object):
             elif name in timeouts:
                 kwargs[name] = float(value)
 
+            elif name == 'socket_keepalive':
+                kwargs[name] = asbool(value)
+
             elif name == 'compress_block_size':
                 kwargs[name] = int(value)
 
